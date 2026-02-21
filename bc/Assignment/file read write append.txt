@@ -1,0 +1,25 @@
+1. erase and write 
+with open("abc.txt", "w") as file:
+    file.write("")
+
+2. append with existing data
+with open("abc.txt", "a") as file:
+    for block in bc.chain:
+        file.write(f"Index: {block.index}\n")
+        file.write(f"Data: {block.data}\n")
+        file.write(f"Previous Hash: {block.prev_hash}\n")
+        file.write(f"Hash: {block.hash}\n")
+        file.write("-"*50 + "\n")
+
+3. read all
+with open("abc.txt", "r") as file:
+    content = file.read()
+
+print(content)
+
+
+4. read line by line (return a list)
+with open("abc.txt", "r") as file:
+    lines = file.readlines()
+
+print(lines)
