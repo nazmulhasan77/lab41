@@ -1,0 +1,85 @@
+1. generate organization's certificates [createOrgs()]
+2. run containers [networkUp()]
+3. create channel [createChannel()]
+4. deploy chaincode [deployCCAAS()]
+5. Frontend
+6. stop containers [networkDown()]
+
+
+1. 
+cryptogen generate --config=./organizations/cryptogen/crypto-config-org1.yaml --output="organizations"
+cryptogen generate --config=./organizations/cryptogen/crypto-config-org2.yaml --output="organizations"
+cryptogen generate --config=./organizations/cryptogen/crypto-config-orderer.yaml --output="organizations"
+
+2. 
+docker compose -f compose/compose-test-net.yaml up -d
+docker compose -f compose/compose-ca.yaml up -d
+
+docker ps --format table{{.Names}}
+
+docker compose -f compose/compose-test-net-bft.yaml up -d
+docker compose -f compose/compose-couch.yaml up -d
+
+3. 
+export PATH=${ROOTDIR}/../bin:${PWD}/../bin:$PATH
+export ORDERER_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt /dev/null 2>&1
+export ORDERER_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.key /dev/null 2>&1
+
+channel join --channelID mychannel --config-block ./channel-artifacts/mychannel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+
+
+4. chaincode deploy 
+
+
+     ┌────────────────────────┐
+     │ 1. Build Docker Image  │
+     └────────────────────────┘
+                │
+                ▼
+     ┌────────────────────────┐
+     │ 2. Package Chaincode   │
+     │ (connection.json +     │
+     │  metadata.json)        │
+     └────────────────────────┘
+                │
+                ▼
+ ┌──────────────────────────────────┐
+ │ 3. Install chaincode on peers    │
+ │    - peer0.org1                  │
+ │    - peer0.org2                  │
+ └──────────────────────────────────┘
+                │
+                ▼
+ ┌──────────────────────────────────┐
+ │ 4. Approve lifecycle             │
+ │    - org1 approve                │
+ │    - readiness check             │
+ │    - org2 approve                │
+ │    - readiness check             │
+ └──────────────────────────────────┘
+                │
+                ▼
+     ┌──────────────────────────┐
+     │ 5. Commit Definition     │
+     │    + Query committed     │
+     └──────────────────────────┘
+                │
+                ▼
+ ┌──────────────────────────────────┐
+ │ 6. Start CCaaS Docker Containers │
+ │    - peer0org1_chaincode         │
+ │    - peer0org2_chaincode         │
+ └──────────────────────────────────┘
+                │
+                ▼
+     ┌──────────────────────────┐
+     │ 7. (Optional) Init Ledger│
+     └──────────────────────────┘
+                │
+                ▼
+          Deployment Complete
+
+6. docker networkDown
+
+docker compose -f compose/compose-test-net.yaml -f compose/compose-ca.yaml down --volumes --remove-orphans
+docker system prune -a

@@ -1,0 +1,114 @@
+1. Modifying Organizations (Bash Script)
+    - creating channel
+    - joining in channel
+    - modifying org name
+
+2. Modifying Chaincode (Golang and changing Frontend)
+    - implementing new function in go
+    - add that function in frontend
+
+
+
+
+./network.sh down
+./network.sh up createChannel -ca
+./network.sh deployCCAAS -ccn asset -ccp ../../chaincode -ccv 1 -ccl go
+
+
+
+=========== Org Creation
+cryptogen generate --config=./organizations/cryptogen/crypto-config-org1.yaml --output="organizations"
+cryptogen generate --config=./organizations/cryptogen/crypto-config-org2.yaml --output="organizations"
+cryptogen generate --config=./organizations/cryptogen/crypto-config-orderer.yaml --output="organizations"
+
+=========== container up 
+export DOCKER_SOCK=/var/run/docker.sock
+docker compose -f compose/compose-ca.yaml -f compose/docker/docker-compose-ca.yaml up -d
+docker compose -f compose/compose-test-net.yaml -f compose/docker/docker-compose-test-net.yaml up -d
+
+============ deploy chaincode
+./scripts/deployCCAAS.sh mychannel asset ../../chaincode "" 1 1 "" "" "" 3 5 false ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7. git clone https://github.com/hyperledger/fabric-samples.git
+8. cd fabric-samples
+9. curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/bootstrap.sh | bash -s
+10. export PATH=$PATH:$PWD/bin
+11. peer version
+
+cd fabric-samples
+git checkout release-2.2 # Or a recent stable version
+
+# Bring up the test network
+cd test-network
+./network.sh up createChannel
+
+
+
+git clone https://github.com/hyperledger/fabric-samples.git
+cd fabric-samples
+git checkout release-2.2
+# use sudo for permission related isssues
+curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s
+
+
+
+
+export PATH=$PATH:$PWD/bin
+peer version
+
+cd test-network
+./network.sh up createChannel
+
+
+go mod init github.com/chaincode
+go mod tidy
+go mod vendor
+
+./network.sh deployCC -ccn asset -ccp ../../chaincode -ccl go
+
+
+# This command should be run from the root of your project, NOT from inside fabric-samples
+cd ../../api-server
+npm install express @hyperledger/fabric-gateway @grpc/grpc-js
+
+node server.js
+
+
+
+User1@org1.example.com-cert.pem
+
+/home/hasin/Desktop/ExampleProjects/AssetTransfer/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/
+
+
+
+
+
+# From the fabric-samples/test-network directory
+cp organizations/peerOrganizations/org1.example.com/connection-org1.json ../api-server/
+
+
+# From the fabric-samples/test-network directory
+# Create a utils directory in your api-server
+mkdir -p ../../api-server/utils
+
+# Copy the required utility files from the asset-transfer-basic sample
+cp ../asset-transfer-basic/application-javascript/AppUtil.js ../api-server/utils/
+cp ../asset-transfer-basic/application-javascript/CAUtil.js ../api-server/utils/
+
+
+cd ../../api-server
+npm install express fabric-ca-client fabric-network
+
